@@ -6,6 +6,16 @@ package com.test.lingvolivewall.model.pojo;
  */
 public class Post {
 
+    private int postDbId;
+
+    public int getPostDbId() {
+        return postDbId;
+    }
+
+    public void setPostDbId(int postDbId) {
+        this.postDbId = postDbId;
+    }
+
     private String message;
 
     private String translation;
@@ -60,5 +70,19 @@ public class Post {
     public String toString() {
         return "ClassPojo [translation = " + translation + ", author = " + author + ", postType = "
                 + postType + ", heading = " + heading + "]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Post) {
+            return ((Post) o).getPostDbId() == postDbId;
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return postDbId;
     }
 }

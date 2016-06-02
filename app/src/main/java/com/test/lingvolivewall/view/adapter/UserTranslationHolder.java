@@ -24,6 +24,9 @@ class UserTranslationHolder extends PostAdapter.ViewHolder {
     @Bind(R.id.author)
     TextView author;
 
+    @Bind(R.id.id)
+    TextView id;
+
     public UserTranslationHolder(View itemView) {
         super(itemView);
         ButterKnife.bind(this, itemView);
@@ -34,9 +37,11 @@ class UserTranslationHolder extends PostAdapter.ViewHolder {
         String name = post.getAuthor().getName();
         String translation = post.getTranslation();
         String heading = post.getHeading();
+        int postDbId = post.getPostDbId();
 
         author.setText(name);
         this.translation.setText(translation);
         this.heading.setText(heading);
+        this.id.setText(Integer.toString(postDbId));
     }
 }

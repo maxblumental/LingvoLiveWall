@@ -37,8 +37,8 @@ public class ModelImpl implements Model {
     }
 
     @Override
-    public Observable<List<Post>> fetchData() {
-        return lingvoLiveService.getPosts(10)
+    public Observable<List<Post>> fetchData(int pageSize) {
+        return lingvoLiveService.getPosts(pageSize)
                 .map(new Func1<ResponsePOJO, List<Post>>() {
                     @Override
                     public List<Post> call(ResponsePOJO responsePOJO) {

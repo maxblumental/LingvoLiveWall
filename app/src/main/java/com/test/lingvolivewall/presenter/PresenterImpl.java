@@ -5,6 +5,10 @@ import com.test.lingvolivewall.model.pojo.Post;
 import com.test.lingvolivewall.other.App;
 import com.test.lingvolivewall.view.View;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -18,6 +22,8 @@ import rx.subscriptions.CompositeSubscription;
  * bvmaks@gmail.com
  */
 public class PresenterImpl implements Presenter {
+
+    private static final int PAGE_SIZE = 20;
 
     @Inject
     Model model;
@@ -35,11 +41,26 @@ public class PresenterImpl implements Presenter {
 
     @Override
     public void onResume() {
-        fetchData();
+        fetch(PAGE_SIZE);
     }
 
-    private void fetchData() {
-        Subscription subscription = model.fetchData()
+    @Override
+    public void onDestroy() {
+        compositeSubscription.unsubscribe();
+    }
+
+    @Override
+    public void refresh() {
+        fetch(view.getPosts().size());
+    }
+
+    @Override
+    public void onBottomReached(int currentSize) {
+        fetch(currentSize + PAGE_SIZE);
+    }
+
+    private void fetch(int postNumber) {
+        Subscription subscription = model.fetchData(postNumber)
                 .subscribe(
                         new Subscriber<List<Post>>() {
                             @Override
@@ -55,21 +76,30 @@ public class PresenterImpl implements Presenter {
 
                             @Override
                             public void onNext(List<Post> posts) {
-                                view.showPosts(posts);
+                                List<Post> old = view.getPosts();
+
+                                if (old == null || old.size() == 0) {
+                                    view.showPosts(posts);
+                                    return;
+                                }
+
+                                HashSet<Post> oldSet = new HashSet<>(old);
+
+                                oldSet.addAll(posts);
+
+                                ArrayList<Post> newPosts = new ArrayList<>(oldSet);
+                                Collections.sort(newPosts, new Comparator<Post>() {
+                                    @Override
+                                    public int compare(Post lhs, Post rhs) {
+                                        return rhs.getPostDbId() - lhs.getPostDbId();
+                                    }
+                                });
+
+                                view.showPosts(newPosts);
                             }
                         }
                 );
 
         compositeSubscription.add(subscription);
-    }
-
-    @Override
-    public void onDestroy() {
-        compositeSubscription.unsubscribe();
-    }
-
-    @Override
-    public void refresh() {
-        fetchData();
     }
 }

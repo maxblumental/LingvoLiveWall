@@ -14,4 +14,6 @@ public interface View {
     void showError(String message);
 
     void stopProgress();
+
+    List<Post> getPosts();
 }

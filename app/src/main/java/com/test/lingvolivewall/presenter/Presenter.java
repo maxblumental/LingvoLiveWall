@@ -14,4 +14,6 @@ public interface Presenter {
     void onDestroy();
 
     void refresh();
+
+    void onBottomReached(int currentSize);
 }

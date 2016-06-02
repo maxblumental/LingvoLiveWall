@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity
         App.getComponent().inject(this);
         refreshLayout.setOnRefreshListener(this);
 
-        postAdapter = new PostAdapter();
+        postAdapter = new PostAdapter(presenter);
         postList.setLayoutManager(new LinearLayoutManager(this));
         postList.setAdapter(postAdapter);
 
@@ -79,6 +79,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void stopProgress() {
         refreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public List<Post> getPosts() {
+        return postAdapter.getPosts();
     }
 
     @Override

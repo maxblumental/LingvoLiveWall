@@ -11,5 +11,5 @@ import rx.Observable;
  * bvmaks@gmail.com
  */
 public interface Model {
-    Observable<List<Post>> fetchData();
+    Observable<List<Post>> fetchData(int pageSize);
 }

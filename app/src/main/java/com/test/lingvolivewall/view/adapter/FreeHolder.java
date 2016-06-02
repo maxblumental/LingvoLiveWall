@@ -22,6 +22,9 @@ class FreeHolder extends PostAdapter.ViewHolder {
     @Bind(R.id.message)
     TextView message;
 
+    @Bind(R.id.id)
+    TextView id;
+
     public FreeHolder(View itemView) {
         super(itemView);
         ButterKnife.bind(this, itemView);
@@ -31,8 +34,10 @@ class FreeHolder extends PostAdapter.ViewHolder {
     void bindPost(Post post) {
         String author = post.getAuthor().getName();
         String message = post.getMessage();
+        int postDbId = post.getPostDbId();
 
         this.author.setText(author);
         this.message.setText(message);
+        this.id.setText(Integer.toString(postDbId));
     }
 }

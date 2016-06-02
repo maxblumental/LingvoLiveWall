@@ -1,19 +1,30 @@
 package com.test.lingvolivewall.view;
 
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
 
 import com.test.lingvolivewall.R;
+import com.test.lingvolivewall.model.pojo.Post;
+import com.test.lingvolivewall.other.App;
 import com.test.lingvolivewall.presenter.Presenter;
+import com.test.lingvolivewall.view.adapter.PostAdapter;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity implements View {
+public class MainActivity extends AppCompatActivity
+        implements View, SwipeRefreshLayout.OnRefreshListener {
+
+    @Bind(R.id.refreshLayout)
+    SwipeRefreshLayout refreshLayout;
 
     @Bind(R.id.connectionIndicator)
     TextView connectionIndicator;
@@ -31,5 +42,47 @@ public class MainActivity extends AppCompatActivity implements View {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        App.getComponent().inject(this);
+        refreshLayout.setOnRefreshListener(this);
+
+        postAdapter = new PostAdapter();
+        postList.setLayoutManager(new LinearLayoutManager(this));
+        postList.setAdapter(postAdapter);
+
+        presenter.onCreate(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        presenter.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        presenter.onDestroy();
+        super.onDestroy();
+    }
+
+    @Override
+    public void showPosts(List<Post> posts) {
+        connectionIndicator.setVisibility(android.view.View.GONE);
+        postAdapter.setPosts(posts);
+    }
+
+    @Override
+    public void showError(String message) {
+        connectionIndicator.setVisibility(android.view.View.VISIBLE);
+        connectionIndicator.setText(message);
+    }
+
+    @Override
+    public void stopProgress() {
+        refreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void onRefresh() {
+        presenter.refresh();
     }
 }

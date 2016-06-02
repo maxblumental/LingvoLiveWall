@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Lingvo Live Wall</string>
     <string name="no_connection">No connection!</string>
+    <string name="posted_by">Posted by:</string>
 </resources>

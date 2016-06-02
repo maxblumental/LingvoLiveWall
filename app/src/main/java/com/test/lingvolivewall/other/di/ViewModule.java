@@ -1,6 +1,9 @@
 package com.test.lingvolivewall.other.di;
 
+import com.test.lingvolivewall.presenter.Presenter;
 import com.test.lingvolivewall.presenter.PresenterImpl;
+
+import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
@@ -12,7 +15,7 @@ import dagger.Provides;
 @Module
 public class ViewModule {
     @Provides
-    PresenterImpl getPresenter() {
+    Presenter getPresenter() {
         return new PresenterImpl();
     }
 }

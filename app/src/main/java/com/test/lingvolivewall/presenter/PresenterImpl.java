@@ -60,7 +60,7 @@ public class PresenterImpl implements Presenter {
     }
 
     private void fetch(int postNumber) {
-        Subscription subscription = model.fetchData(postNumber)
+        Subscription subscription = model.fetchPosts(postNumber)
                 .subscribe(
                         new Subscriber<List<Post>>() {
                             @Override

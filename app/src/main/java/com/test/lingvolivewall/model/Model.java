@@ -1,5 +1,7 @@
 package com.test.lingvolivewall.model;
 
+import android.content.Context;
+
 import com.test.lingvolivewall.model.pojo.Post;
 
 import java.util.List;
@@ -11,5 +13,5 @@ import rx.Observable;
  * bvmaks@gmail.com
  */
 public interface Model {
-    Observable<List<Post>> fetchData(int pageSize);
+    Observable<List<Post>> fetchPosts(Context context, int pageSize);
 }

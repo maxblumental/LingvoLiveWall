@@ -1,5 +1,10 @@
 package com.test.lingvolivewall.model;
 
+import android.content.Context;
+import android.database.Cursor;
+
+import com.test.lingvolivewall.model.db.PostProvider;
+import com.test.lingvolivewall.model.db.PostTable;
 import com.test.lingvolivewall.model.network.LingvoLiveService;
 import com.test.lingvolivewall.model.pojo.Post;
 import com.test.lingvolivewall.model.pojo.ResponsePOJO;
@@ -13,6 +18,7 @@ import javax.inject.Named;
 
 import rx.Observable;
 import rx.Scheduler;
+import rx.Subscriber;
 import rx.functions.Func1;
 
 /**
@@ -37,7 +43,30 @@ public class ModelImpl implements Model {
     }
 
     @Override
-    public Observable<List<Post>> fetchData(int pageSize) {
+    public Observable<List<Post>> fetchPosts(final Context context, int pageSize) {
+        Observable.create(new Observable.OnSubscribe<List<Post>>() {
+            @Override
+            public void call(Subscriber<? super List<Post>> subscriber) {
+                Cursor cursor = context.getContentResolver().query(PostProvider.CONTENT_URI, null, null, null, null);
+
+                if (cursor == null) {
+                    subscriber.onCompleted();
+                }
+
+                try {
+                    while (cursor.moveToNext()) {
+                        int id = cursor.getInt(cursor.getColumnIndex(PostTable.COLUMN_POST_ID));
+                        String heading = cursor.getString(cursor.getColumnIndex(PostTable.COLUMN_HEADING));
+                        String author = cursor.getString(cursor.getColumnIndex(PostTable.COLUMN_AUTHOR));
+//                        String author = cursor.getString(cursor.getColumnIndex(PostTable.COLUMN_AUTHOR));
+//                        String author = cursor.getString(cursor.getColumnIndex(PostTable.COLUMN_AUTHOR));
+//                        String author = cursor.getString(cursor.getColumnIndex(PostTable.COLUMN_AUTHOR));
+                    }
+                } finally {
+                    cursor.close();
+                }
+            }
+        });
         return lingvoLiveService.getPosts(pageSize)
                 .map(new Func1<ResponsePOJO, List<Post>>() {
                     @Override

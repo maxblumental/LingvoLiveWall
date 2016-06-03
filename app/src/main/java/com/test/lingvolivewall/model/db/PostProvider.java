@@ -18,10 +18,8 @@ import java.util.HashSet;
  */
 public class PostProvider extends ContentProvider {
 
-    // database
     private PostDBHelper database;
 
-    // used for the UriMacher
     private static final int POSTS = 10;
     private static final int POSTS_ID = 20;
 
@@ -49,13 +47,10 @@ public class PostProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
-        // Uisng SQLiteQueryBuilder instead of query() method
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
-        // check if the caller has requested a column which does not exists
         checkColumns(projection);
 
-        // Set the table
         queryBuilder.setTables(PostTable.POST_TABLE);
 
         int uriType = sURIMatcher.match(uri);
@@ -63,7 +58,6 @@ public class PostProvider extends ContentProvider {
             case POSTS:
                 break;
             case POSTS_ID:
-                // adding the ID to the original query
                 queryBuilder.appendWhere(PostTable.COLUMN_ID + "="
                         + uri.getLastPathSegment());
                 break;
@@ -74,7 +68,6 @@ public class PostProvider extends ContentProvider {
         SQLiteDatabase db = database.getWritableDatabase();
         Cursor cursor = queryBuilder.query(db, projection, selection,
                 selectionArgs, null, null, sortOrder);
-        // make sure that potential listeners are getting notified
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
         return cursor;
@@ -172,12 +165,13 @@ public class PostProvider extends ContentProvider {
         String[] available = {
                 PostTable.COLUMN_POST_ID, PostTable.COLUMN_MESSAGE,
                 PostTable.COLUMN_AUTHOR, PostTable.COLUMN_TRANSLATION,
-                PostTable.COLUMN_ID, PostTable.COLUMN_HEADING
+                PostTable.COLUMN_ID, PostTable.COLUMN_HEADING,
+                PostTable.COLUMN_POST_TYPE
         };
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<>(Arrays.asList(projection));
             HashSet<String> availableColumns = new HashSet<>(Arrays.asList(available));
-            // check if all columns which are requested are available
+
             if (!availableColumns.containsAll(requestedColumns)) {
                 throw new IllegalArgumentException("Unknown columns in projection");
             }

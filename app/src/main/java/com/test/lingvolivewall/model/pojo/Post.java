@@ -1,5 +1,10 @@
 package com.test.lingvolivewall.model.pojo;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+
+import com.test.lingvolivewall.model.db.PostTable;
+
 /**
  * Created by Maxim Blumental on 6/2/2016.
  * bvmaks@gmail.com
@@ -84,5 +89,46 @@ public class Post {
     @Override
     public int hashCode() {
         return postDbId;
+    }
+
+    /**
+     * Factory method used for extracting posts
+     * from the database.
+     *
+     * @param cursor - a cursor pointing to a row with Post's fields
+     */
+    public static Post create(Cursor cursor) {
+        int id = cursor.getInt(cursor.getColumnIndex(PostTable.COLUMN_POST_ID));
+        String heading = cursor.getString(cursor.getColumnIndex(PostTable.COLUMN_HEADING));
+        String authorName = cursor.getString(cursor.getColumnIndex(PostTable.COLUMN_AUTHOR));
+        String message = cursor.getString(cursor.getColumnIndex(PostTable.COLUMN_MESSAGE));
+        String translation = cursor.getString(cursor.getColumnIndex(PostTable.COLUMN_TRANSLATION));
+        String postType = cursor.getString(cursor.getColumnIndex(PostTable.COLUMN_POST_TYPE));
+
+        Post post = new Post();
+        Author author = new Author();
+
+        author.setName(authorName);
+        post.setAuthor(author);
+        post.setHeading(heading);
+        post.setMessage(message);
+        post.setTranslation(translation);
+        post.setPostDbId(id);
+        post.setPostType(postType);
+
+        return post;
+    }
+
+    public static ContentValues prepareForDB(Post post) {
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(PostTable.COLUMN_POST_TYPE, post.getPostType());
+        contentValues.put(PostTable.COLUMN_AUTHOR, post.getAuthor().getName());
+        contentValues.put(PostTable.COLUMN_HEADING, post.getHeading());
+        contentValues.put(PostTable.COLUMN_POST_ID, post.getPostDbId());
+        contentValues.put(PostTable.COLUMN_MESSAGE, post.getMessage());
+        contentValues.put(PostTable.COLUMN_TRANSLATION, post.getTranslation());
+
+        return contentValues;
     }
 }

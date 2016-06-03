@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity
         App.getComponent().inject(this);
         refreshLayout.setOnRefreshListener(this);
 
-        postAdapter = new PostAdapter(presenter);
+        postAdapter = new PostAdapter(this, presenter);
         postList.setLayoutManager(new LinearLayoutManager(this));
         postList.setAdapter(postAdapter);
 
@@ -55,12 +55,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        presenter.onResume();
+        presenter.onResume(this);
     }
 
     @Override
     protected void onDestroy() {
-        presenter.onDestroy();
+        presenter.onDestroy(this, isChangingConfigurations());
         super.onDestroy();
     }
 
@@ -88,6 +88,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onRefresh() {
-        presenter.refresh();
+        presenter.refresh(this);
     }
 }

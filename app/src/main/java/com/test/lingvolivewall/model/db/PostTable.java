@@ -15,6 +15,7 @@ public class PostTable {
     public static final String COLUMN_MESSAGE = "message";
     public static final String COLUMN_TRANSLATION = "translation";
     public static final String COLUMN_HEADING = "heading";
+    public static final String COLUMN_POST_TYPE = "post_type";
 
     private static final String DATABASE_CREATE = "create table "
             + POST_TABLE + "( "
@@ -23,7 +24,8 @@ public class PostTable {
             + COLUMN_AUTHOR + " text not null, "
             + COLUMN_MESSAGE + " text, "
             + COLUMN_TRANSLATION + " text,"
-            + COLUMN_HEADING + " text"
+            + COLUMN_HEADING + " text,"
+            + COLUMN_POST_TYPE + " text"
             + ");";
 
     public static void onCreate(SQLiteDatabase database) {

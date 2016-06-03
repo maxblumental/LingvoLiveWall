@@ -1,5 +1,6 @@
 package com.test.lingvolivewall.view.adapter;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +14,7 @@ import java.util.List;
 
 /**
  * Provides elements for the list of posts.
- * <p/>
+ * <p>
  * Created by Maxim Blumental on 6/2/2016.
  * bvmaks@gmail.com
  */
@@ -23,8 +24,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
     private List<Post> posts;
 
-    public PostAdapter(Presenter presenter) {
+    private Context context;
+
+    public PostAdapter(Context context, Presenter presenter) {
         this.presenter = presenter;
+        this.context = context;
     }
 
     public List<Post> getPosts() {
@@ -98,7 +102,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         if (position + 1 == posts.size()) {
-            presenter.onBottomReached(posts.size());
+            presenter.onBottomReached(context, posts.size());
         }
 
         Post post = posts.get(position);

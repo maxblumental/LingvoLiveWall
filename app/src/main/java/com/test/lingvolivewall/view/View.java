@@ -13,6 +13,8 @@ public interface View {
 
     void showError(String message);
 
+    void hideError();
+
     void stopProgress();
 
     List<Post> getPosts();

@@ -5,6 +5,7 @@ import android.database.Cursor;
 
 import com.test.lingvolivewall.model.db.PostProvider;
 import com.test.lingvolivewall.model.network.LingvoLiveService;
+import com.test.lingvolivewall.model.network.NetworkEvent;
 import com.test.lingvolivewall.model.pojo.Post;
 import com.test.lingvolivewall.model.pojo.ResponsePOJO;
 import com.test.lingvolivewall.other.App;
@@ -17,7 +18,11 @@ import javax.inject.Inject;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.functions.Action0;
+import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.subjects.PublishSubject;
+import rx.subjects.Subject;
 
 /**
  * Created by Maxim Blumental on 6/2/2016.
@@ -28,8 +33,11 @@ public class ModelImpl implements Model {
     @Inject
     LingvoLiveService lingvoLiveService;
 
+    private Subject<NetworkEvent, NetworkEvent> networkEventBus;
+
     public ModelImpl() {
         App.getComponent().inject(this);
+        networkEventBus = PublishSubject.create();
     }
 
     @Override
@@ -68,6 +76,26 @@ public class ModelImpl implements Model {
                     }
                 });
 
-        return networkObservable.onErrorResumeNext(dbObservable);
+        return networkObservable
+                .doOnCompleted(new Action0() {
+                    @Override
+                    public void call() {
+                        networkEventBus.onNext(NetworkEvent.SUCCESS);
+                    }
+                })
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        NetworkEvent event = NetworkEvent.FAILURE;
+                        event.setThrowable(throwable);
+                        networkEventBus.onNext(event);
+                    }
+                })
+                .onErrorResumeNext(dbObservable);
+    }
+
+    @Override
+    public Observable<NetworkEvent> getNetworkEventBus() {
+        return networkEventBus;
     }
 }

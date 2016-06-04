@@ -5,6 +5,7 @@ import android.content.Context;
 
 import com.test.lingvolivewall.model.Model;
 import com.test.lingvolivewall.model.db.PostProvider;
+import com.test.lingvolivewall.model.network.NetworkEvent;
 import com.test.lingvolivewall.model.pojo.Post;
 import com.test.lingvolivewall.other.App;
 import com.test.lingvolivewall.view.View;
@@ -21,6 +22,7 @@ import javax.inject.Named;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.Subscription;
+import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
 /**
@@ -50,9 +52,30 @@ public class PresenterImpl implements Presenter {
     CompositeSubscription compositeSubscription;
 
     @Override
-    public void onCreate(View view) {
+    public void onCreate(final View view) {
         App.getComponent().inject(this);
         this.view = view;
+
+        Subscription subscription = model.getNetworkEventBus()
+                .subscribeOn(ioThread)
+                .observeOn(uiThread)
+                .subscribe(new Action1<NetworkEvent>() {
+                    @Override
+                    public void call(NetworkEvent event) {
+                        switch (event) {
+                            case SUCCESS:
+                                view.hideError();
+                                break;
+                            case FAILURE:
+                                view.showError(event.getThrowable().getMessage());
+                                view.stopProgress();
+                                event.getThrowable().printStackTrace();
+                                break;
+                        }
+                    }
+                });
+
+        compositeSubscription.add(subscription);
     }
 
     @Override
@@ -106,7 +129,7 @@ public class PresenterImpl implements Presenter {
                             @Override
                             public void onError(Throwable e) {
                                 view.stopProgress();
-                                view.showError(e.toString());
+                                view.showError(e.getMessage());
                             }
 
                             @Override

@@ -66,7 +66,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void showPosts(List<Post> posts) {
-        connectionIndicator.setVisibility(android.view.View.GONE);
         postAdapter.setPosts(posts);
     }
 
@@ -74,6 +73,11 @@ public class MainActivity extends AppCompatActivity
     public void showError(String message) {
         connectionIndicator.setVisibility(android.view.View.VISIBLE);
         connectionIndicator.setText(message);
+    }
+
+    @Override
+    public void hideError() {
+        connectionIndicator.setVisibility(android.view.View.GONE);
     }
 
     @Override

@@ -1,7 +1,5 @@
 package com.test.lingvolivewall.presenter;
 
-import android.content.Context;
-
 import com.test.lingvolivewall.view.View;
 
 /**
@@ -11,7 +9,9 @@ import com.test.lingvolivewall.view.View;
 public interface Presenter {
     void onCreate(View view);
 
-    void onResume();
+    void onStart();
+
+    void onStop();
 
     void onDestroy(boolean isChangingConfigurations);
 

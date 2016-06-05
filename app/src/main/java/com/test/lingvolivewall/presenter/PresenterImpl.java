@@ -12,6 +12,7 @@ import com.test.lingvolivewall.model.pojo.Post;
 import com.test.lingvolivewall.other.App;
 import com.test.lingvolivewall.view.View;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -56,7 +57,7 @@ public class PresenterImpl implements Presenter {
     @Named("UI_THREAD")
     Scheduler uiThread;
 
-    private View view;
+    private WeakReference<View> view;
 
     private CompositeSubscription compositeSubscription;
 
@@ -66,7 +67,7 @@ public class PresenterImpl implements Presenter {
     public void onCreate(final View view) {
         App.getComponent().inject(this);
         compositeSubscription = new CompositeSubscription();
-        this.view = view;
+        this.view = new WeakReference<>(view);
 
         compositeSubscription.add(
                 model.getNetworkEventBus()
@@ -95,44 +96,45 @@ public class PresenterImpl implements Presenter {
                 return false;
             }
         });
+    }
 
+    @Override
+    public void onStart() {
+        fetch(view.get().getContext(), PAGE_SIZE);
         uiHandler.sendEmptyMessageDelayed(AUTO_REFRESH, AUTO_REFRESH_PERIOD);
     }
 
     @Override
-    public void onResume() {
-        view.showProgress();
-        fetch(view.getContext(), PAGE_SIZE);
+    public void onStop() {
+        uiHandler.removeMessages(AUTO_REFRESH);
     }
 
     @Override
     public void onDestroy(boolean isChangingConfigurations) {
         compositeSubscription.unsubscribe();
 
-        uiHandler.removeMessages(AUTO_REFRESH);
-
         if (!isChangingConfigurations) {
-            updateDB(view.getContext());
+            updateDB(view.get().getContext());
         }
 
-        view = null;
+        view.clear();
     }
 
     @Override
     public void refresh() {
-        List<Post> posts = view.getPosts();
+        List<Post> posts = view.get().getPosts();
         int size = posts == null ? PAGE_SIZE : posts.size();
-        fetch(view.getContext(), size);
+        fetch(view.get().getContext(), size);
     }
 
     @Override
     public void loadMorePosts(int currentSize) {
-        fetch(view.getContext(), currentSize + PAGE_SIZE);
+        fetch(view.get().getContext(), currentSize + PAGE_SIZE);
     }
 
     @Override
     public boolean canLoadMore() {
-        return model.isConnectionOK(view.getContext()) && model.hasMoreElements();
+        return model.isConnectionOK(view.get().getContext()) && model.hasMoreElements();
     }
 
     private void fetch(Context context, int postNumber) {
@@ -143,21 +145,21 @@ public class PresenterImpl implements Presenter {
                         new Subscriber<List<Post>>() {
                             @Override
                             public void onCompleted() {
-                                view.stopProgress();
+                                view.get().stopProgress();
                             }
 
                             @Override
                             public void onError(Throwable e) {
-                                view.stopProgress();
-                                view.showError(e.getMessage());
+                                view.get().stopProgress();
+                                view.get().showError(e.getMessage());
                             }
 
                             @Override
                             public void onNext(List<Post> posts) {
-                                List<Post> old = view.getPosts();
+                                List<Post> old = view.get().getPosts();
 
                                 if (old == null || old.size() == 0) {
-                                    view.showPosts(posts);
+                                    view.get().showPosts(posts);
                                     return;
                                 }
 
@@ -173,7 +175,7 @@ public class PresenterImpl implements Presenter {
                                     }
                                 });
 
-                                view.showPosts(newPosts);
+                                view.get().showPosts(newPosts);
                             }
                         }
                 );
@@ -195,7 +197,7 @@ public class PresenterImpl implements Presenter {
     private void updateDB(Context context) {
         context.getContentResolver().delete(PostProvider.CONTENT_URI, null, null);
 
-        List<Post> posts = view.getPosts();
+        List<Post> posts = view.get().getPosts();
 
         if (posts != null) {
             for (int i = 0; i < Math.min(PAGE_SIZE * PAGES_TO_SAVE, posts.size()); i++) {

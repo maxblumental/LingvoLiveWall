@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity
         App.getComponent().inject(this);
         refreshLayout.setOnRefreshListener(this);
 
-        postAdapter = new PostAdapter(this, presenter);
+        postAdapter = new PostAdapter(presenter);
         postList.setLayoutManager(new LinearLayoutManager(this));
         postList.setAdapter(postAdapter);
 

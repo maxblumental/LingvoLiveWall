@@ -18,7 +18,7 @@ public class ResponsePOJO {
         this.posts = posts;
     }
 
-    public boolean isHasMorePosts() {
+    public boolean hasMorePosts() {
         return hasMorePosts;
     }
 

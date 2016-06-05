@@ -17,4 +17,8 @@ public interface Model {
     Observable<List<Post>> fetchPosts(Context context, int pageSize);
 
     Observable<NetworkEvent> getNetworkEventBus();
+
+    boolean isConnectionOK(Context context);
+
+    boolean hasMoreElements();
 }

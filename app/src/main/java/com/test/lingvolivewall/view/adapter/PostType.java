@@ -33,6 +33,14 @@ public enum PostType implements ViewHolderFactory {
             View view = inflater.inflate(R.layout.free, parent, false);
             return new FreeHolder(view);
         }
+    },
+
+    LOADING("Loading") {
+        @Override
+        public PostAdapter.ViewHolder createViewHolder(LayoutInflater inflater, ViewGroup parent) {
+            View view = inflater.inflate(R.layout.loading, parent, false);
+            return new LoadingHolder(view);
+        }
     };
 
     private final String name;

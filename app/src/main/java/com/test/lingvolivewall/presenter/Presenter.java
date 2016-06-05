@@ -17,5 +17,7 @@ public interface Presenter {
 
     void refresh();
 
-    void onBottomReached(int currentSize);
+    void loadMorePosts(int currentSize);
+
+    boolean canLoadMore();
 }

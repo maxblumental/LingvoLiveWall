@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.test.lingvolivewall.R;
 import com.test.lingvolivewall.model.pojo.Post;
 import com.test.lingvolivewall.presenter.Presenter;
 
@@ -46,8 +45,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
     @Override
     public int getItemViewType(int position) {
-        if (position + 1 == posts.size()) {
-            return PostType.values().length;
+        if (position + 1 == posts.size() && presenter.canLoadMore()) {
+            return PostType.LOADING.ordinal();
         }
 
         String typeName = posts.get(position).getPostType();
@@ -64,11 +63,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
-        if (viewType == PostType.values().length) {
-            View loadingView = inflater.inflate(R.layout.loading, parent, false);
-            return new LoadingHolder(loadingView);
-        }
-
         PostType postType = PostType.values()[viewType];
 
         return postType.createViewHolder(inflater, parent);
@@ -76,8 +70,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        if (position + 1 == posts.size()) {
-            presenter.onBottomReached(posts.size());
+        if (getItemViewType(position) == PostType.LOADING.ordinal()) {
+            presenter.loadMorePosts(posts.size());
         }
 
         Post post = posts.get(position);

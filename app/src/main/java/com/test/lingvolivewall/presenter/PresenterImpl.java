@@ -43,7 +43,7 @@ public class PresenterImpl implements Presenter {
 
     private static final int AUTO_REFRESH = 42;
 
-    private static final int AUTO_REFRESH_PERIOD = 15 * 1000;
+    private static final int AUTO_REFRESH_PERIOD = 60 * 1000;
 
     @Inject
     Model model;
@@ -58,14 +58,14 @@ public class PresenterImpl implements Presenter {
 
     private View view;
 
-    @Inject
-    CompositeSubscription compositeSubscription;
+    private CompositeSubscription compositeSubscription;
 
     private Handler uiHandler;
 
     @Override
     public void onCreate(final View view) {
         App.getComponent().inject(this);
+        compositeSubscription = new CompositeSubscription();
         this.view = view;
 
         compositeSubscription.add(
@@ -101,6 +101,7 @@ public class PresenterImpl implements Presenter {
 
     @Override
     public void onResume() {
+        view.showProgress();
         fetch(view.getContext(), PAGE_SIZE);
     }
 
@@ -125,13 +126,16 @@ public class PresenterImpl implements Presenter {
     }
 
     @Override
-    public void onBottomReached(int currentSize) {
+    public void loadMorePosts(int currentSize) {
         fetch(view.getContext(), currentSize + PAGE_SIZE);
     }
 
-    private void fetch(Context context, int postNumber) {
-        view.showProgress();
+    @Override
+    public boolean canLoadMore() {
+        return model.isConnectionOK(view.getContext()) && model.hasMoreElements();
+    }
 
+    private void fetch(Context context, int postNumber) {
         Subscription subscription = model.fetchPosts(context, postNumber)
                 .observeOn(uiThread)
                 .subscribeOn(ioThread)

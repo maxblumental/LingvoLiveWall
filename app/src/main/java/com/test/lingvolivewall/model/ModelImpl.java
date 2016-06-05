@@ -2,6 +2,8 @@ package com.test.lingvolivewall.model;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import com.test.lingvolivewall.model.db.PostProvider;
 import com.test.lingvolivewall.model.network.LingvoLiveService;
@@ -13,6 +15,7 @@ import com.test.lingvolivewall.other.App;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 
@@ -30,6 +33,8 @@ import rx.subjects.Subject;
  */
 public class ModelImpl implements Model {
 
+    private AtomicBoolean hasMoreElements;
+
     @Inject
     LingvoLiveService lingvoLiveService;
 
@@ -38,6 +43,7 @@ public class ModelImpl implements Model {
     public ModelImpl() {
         App.getComponent().inject(this);
         networkEventBus = PublishSubject.create();
+        hasMoreElements = new AtomicBoolean(false);
     }
 
     @Override
@@ -72,6 +78,7 @@ public class ModelImpl implements Model {
                 .map(new Func1<ResponsePOJO, List<Post>>() {
                     @Override
                     public List<Post> call(ResponsePOJO responsePOJO) {
+                        ModelImpl.this.hasMoreElements.set(responsePOJO.hasMorePosts());
                         return Arrays.asList(responsePOJO.getPosts());
                     }
                 });
@@ -97,5 +104,20 @@ public class ModelImpl implements Model {
     @Override
     public Observable<NetworkEvent> getNetworkEventBus() {
         return networkEventBus;
+    }
+
+    @Override
+    public boolean isConnectionOK(Context context) {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
+    @Override
+    public boolean hasMoreElements() {
+        return hasMoreElements.get();
     }
 }

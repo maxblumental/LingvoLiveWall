@@ -20,11 +20,6 @@ import rx.subscriptions.CompositeSubscription;
 @Module
 public class PresenterModule {
     @Provides
-    CompositeSubscription getCompositeSubscription() {
-        return new CompositeSubscription();
-    }
-
-    @Provides
     Model getModel() {
         return new ModelImpl();
     }

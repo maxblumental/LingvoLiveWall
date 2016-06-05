@@ -102,7 +102,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         if (position + 1 == posts.size()) {
-            presenter.onBottomReached(context, posts.size());
+            presenter.onBottomReached(posts.size());
         }
 
         Post post = posts.get(position);

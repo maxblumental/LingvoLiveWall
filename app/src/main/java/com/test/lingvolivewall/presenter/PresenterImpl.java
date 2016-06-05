@@ -2,6 +2,8 @@ package com.test.lingvolivewall.presenter;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 
 import com.test.lingvolivewall.model.Model;
 import com.test.lingvolivewall.model.db.PostProvider;
@@ -33,7 +35,15 @@ public class PresenterImpl implements Presenter {
 
     private static final int PAGE_SIZE = 20;
 
+    /**
+     * How many pages should be saved to DB for offline mode
+     * when the application is closed.
+     */
     private static final int PAGES_TO_SAVE = 5;
+
+    private static final int AUTO_REFRESH = 42;
+
+    private static final int AUTO_REFRESH_PERIOD = 15 * 1000;
 
     @Inject
     Model model;
@@ -51,71 +61,77 @@ public class PresenterImpl implements Presenter {
     @Inject
     CompositeSubscription compositeSubscription;
 
+    private Handler uiHandler;
+
     @Override
     public void onCreate(final View view) {
         App.getComponent().inject(this);
         this.view = view;
 
-        Subscription subscription = model.getNetworkEventBus()
-                .subscribeOn(ioThread)
-                .observeOn(uiThread)
-                .subscribe(new Action1<NetworkEvent>() {
-                    @Override
-                    public void call(NetworkEvent event) {
-                        switch (event) {
-                            case SUCCESS:
-                                view.hideError();
-                                break;
-                            case FAILURE:
-                                view.showError(event.getThrowable().getMessage());
-                                view.stopProgress();
-                                event.getThrowable().printStackTrace();
-                                break;
-                        }
-                    }
-                });
+        compositeSubscription.add(
+                model.getNetworkEventBus()
+                        .subscribeOn(ioThread)
+                        .observeOn(uiThread)
+                        .subscribe(new Action1<NetworkEvent>() {
+                            @Override
+                            public void call(NetworkEvent event) {
+                                handleNetworkEvent(event, view);
+                            }
+                        })
+        );
 
-        compositeSubscription.add(subscription);
+        uiHandler = new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message msg) {
+                if (msg.what == AUTO_REFRESH) {
+                    List<Post> posts = view.getPosts();
+                    int size = posts == null || posts.size() < PAGE_SIZE
+                            ? PAGE_SIZE
+                            : posts.size();
+                    fetch(view.getContext(), size);
+                    uiHandler.sendEmptyMessageDelayed(AUTO_REFRESH, AUTO_REFRESH_PERIOD);
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        uiHandler.sendEmptyMessageDelayed(AUTO_REFRESH, AUTO_REFRESH_PERIOD);
     }
 
     @Override
-    public void onResume(Context context) {
-        fetch(context, PAGE_SIZE);
+    public void onResume() {
+        fetch(view.getContext(), PAGE_SIZE);
     }
 
     @Override
-    public void onDestroy(Context context, boolean isChangingConfigurations) {
+    public void onDestroy(boolean isChangingConfigurations) {
         compositeSubscription.unsubscribe();
 
+        uiHandler.removeMessages(AUTO_REFRESH);
+
         if (!isChangingConfigurations) {
-            context.getContentResolver().delete(PostProvider.CONTENT_URI, null, null);
-
-            List<Post> posts = view.getPosts();
-
-            if (posts != null) {
-                for (int i = 0; i < Math.min(PAGE_SIZE * PAGES_TO_SAVE, posts.size()); i++) {
-                    ContentValues contentValues = Post.prepareForDB(posts.get(i));
-                    context.getContentResolver().insert(PostProvider.CONTENT_URI, contentValues);
-                }
-            }
+            updateDB(view.getContext());
         }
 
         view = null;
     }
 
     @Override
-    public void refresh(Context context) {
+    public void refresh() {
         List<Post> posts = view.getPosts();
         int size = posts == null ? PAGE_SIZE : posts.size();
-        fetch(context, size);
+        fetch(view.getContext(), size);
     }
 
     @Override
-    public void onBottomReached(Context context, int currentSize) {
-        fetch(context, currentSize + PAGE_SIZE);
+    public void onBottomReached(int currentSize) {
+        fetch(view.getContext(), currentSize + PAGE_SIZE);
     }
 
     private void fetch(Context context, int postNumber) {
+        view.showProgress();
+
         Subscription subscription = model.fetchPosts(context, postNumber)
                 .observeOn(uiThread)
                 .subscribeOn(ioThread)
@@ -159,5 +175,29 @@ public class PresenterImpl implements Presenter {
                 );
 
         compositeSubscription.add(subscription);
+    }
+
+    private void handleNetworkEvent(NetworkEvent event, View view) {
+        switch (event) {
+            case SUCCESS:
+                view.hideError();
+                break;
+            case FAILURE:
+                view.showError(event.getThrowable().getMessage());
+                break;
+        }
+    }
+
+    private void updateDB(Context context) {
+        context.getContentResolver().delete(PostProvider.CONTENT_URI, null, null);
+
+        List<Post> posts = view.getPosts();
+
+        if (posts != null) {
+            for (int i = 0; i < Math.min(PAGE_SIZE * PAGES_TO_SAVE, posts.size()); i++) {
+                ContentValues contentValues = Post.prepareForDB(posts.get(i));
+                context.getContentResolver().insert(PostProvider.CONTENT_URI, contentValues);
+            }
+        }
     }
 }

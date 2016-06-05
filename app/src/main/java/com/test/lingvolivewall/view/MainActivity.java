@@ -1,5 +1,6 @@
 package com.test.lingvolivewall.view;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -55,12 +56,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        presenter.onResume(this);
+        presenter.onResume();
     }
 
     @Override
     protected void onDestroy() {
-        presenter.onDestroy(this, isChangingConfigurations());
+        presenter.onDestroy(isChangingConfigurations());
         super.onDestroy();
     }
 
@@ -81,6 +82,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void showProgress() {
+        refreshLayout.setRefreshing(true);
+    }
+
+    @Override
     public void stopProgress() {
         refreshLayout.setRefreshing(false);
     }
@@ -91,7 +97,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRefresh() {
-        presenter.refresh(this);
+    public Context getContext() {
+        return this;
     }
+
+    @Override
+    public void onRefresh() {
+        presenter.refresh();
+    }
+
+
 }

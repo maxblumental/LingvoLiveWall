@@ -11,11 +11,11 @@ import com.test.lingvolivewall.view.View;
 public interface Presenter {
     void onCreate(View view);
 
-    void onResume(Context context);
+    void onResume();
 
-    void onDestroy(Context context, boolean isChangingConfigurations);
+    void onDestroy(boolean isChangingConfigurations);
 
-    void refresh(Context context);
+    void refresh();
 
-    void onBottomReached(Context context, int currentSize);
+    void onBottomReached(int currentSize);
 }

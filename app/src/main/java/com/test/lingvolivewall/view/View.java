@@ -1,5 +1,7 @@
 package com.test.lingvolivewall.view;
 
+import android.content.Context;
+
 import com.test.lingvolivewall.model.pojo.Post;
 
 import java.util.List;
@@ -15,7 +17,11 @@ public interface View {
 
     void hideError();
 
+    void showProgress();
+
     void stopProgress();
 
     List<Post> getPosts();
+
+    Context getContext();
 }

@@ -2,6 +2,8 @@ package com.test.lingvolivewall.other.di;
 
 import com.test.lingvolivewall.model.network.LingvoLiveService;
 
+import javax.inject.Singleton;
+
 import dagger.Module;
 import dagger.Provides;
 import retrofit2.GsonConverterFactory;
@@ -15,6 +17,7 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 @Module
 public class ModelModule {
     @Provides
+    @Singleton
     LingvoLiveService getRemoteService() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(LingvoLiveService.BASE_URL)

@@ -20,6 +20,7 @@ import rx.subscriptions.CompositeSubscription;
 @Module
 public class PresenterModule {
     @Provides
+    @Singleton
     Model getModel() {
         return new ModelImpl();
     }

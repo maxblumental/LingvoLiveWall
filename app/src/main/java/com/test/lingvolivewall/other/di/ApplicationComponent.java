@@ -4,6 +4,8 @@ import com.test.lingvolivewall.model.ModelImpl;
 import com.test.lingvolivewall.presenter.PresenterImpl;
 import com.test.lingvolivewall.view.MainActivity;
 
+import javax.inject.Singleton;
+
 import dagger.Component;
 
 /**
@@ -11,6 +13,7 @@ import dagger.Component;
  * bvmaks@gmail.com
  */
 @Component(modules = {ViewModule.class, PresenterModule.class, ModelModule.class})
+@Singleton
 public interface ApplicationComponent {
     void inject(MainActivity activity);
 

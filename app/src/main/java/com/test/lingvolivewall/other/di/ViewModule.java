@@ -15,6 +15,7 @@ import dagger.Provides;
 @Module
 public class ViewModule {
     @Provides
+    @Singleton
     Presenter getPresenter() {
         return new PresenterImpl();
     }

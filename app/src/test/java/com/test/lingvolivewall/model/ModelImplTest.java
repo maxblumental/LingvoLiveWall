@@ -12,12 +12,17 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import rx.Observable;
 import rx.Subscriber;
+import rx.observers.TestSubscriber;
 
 public class ModelImplTest {
 
-    private final int PAGE_SIZE = 2;
+    private final int PAGE_SIZE = 1;
 
     @Rule
     public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -36,19 +41,31 @@ public class ModelImplTest {
                     public void call(Subscriber<? super ResponsePOJO> subscriber) {
                         final ResponsePOJO responsePOJO = new ResponsePOJO();
                         responsePOJO.setHasMorePosts(true);
-                        responsePOJO.setPosts(new Post[]{
-                                new Post(), new Post()
-                        });
+
+                        Post post = new Post();
+                        post.setPostDbId(1);
+
+                        responsePOJO.setPosts(new Post[]{post});
+
                         subscriber.onNext(responsePOJO);
+                        subscriber.onCompleted();
                     }
                 }));
 
-        //model.fetchPosts()
+        Observable<List<Post>> observable = model.fetchPosts(PAGE_SIZE);
+        TestSubscriber<List<Post>> testSubscriber = new TestSubscriber<>();
+
+        observable.subscribe(testSubscriber);
+        testSubscriber.awaitTerminalEvent();
+
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertCompleted();
+
+        ArrayList<List<Post>> items = new ArrayList<>();
+        Post post = new Post();
+        post.setPostDbId(1);
+        items.add(Collections.singletonList(post));
+
+        testSubscriber.assertReceivedOnNext(items);
     }
-
-    @Test
-    public void hasMoreElements() throws Exception {
-
-    }
-
 }

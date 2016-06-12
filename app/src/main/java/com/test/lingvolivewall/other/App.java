@@ -1,9 +1,13 @@
 package com.test.lingvolivewall.other;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.test.lingvolivewall.other.di.ApplicationComponent;
 import com.test.lingvolivewall.other.di.DaggerApplicationComponent;
+import com.test.lingvolivewall.other.di.ModelModule;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Created by Maxim Blumental on 6/2/2016.
@@ -25,6 +29,9 @@ public class App extends Application {
     }
 
     private void build() {
-        applicationComponent = DaggerApplicationComponent.builder().build();
+        applicationComponent = DaggerApplicationComponent
+                .builder()
+                .modelModule(new ModelModule(new WeakReference<Context>(this)))
+                .build();
     }
 }

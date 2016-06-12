@@ -1,12 +1,10 @@
 package com.test.lingvolivewall.presenter;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 
 import com.test.lingvolivewall.model.Model;
-import com.test.lingvolivewall.model.db.PostProvider;
 import com.test.lingvolivewall.model.network.NetworkEvent;
 import com.test.lingvolivewall.model.pojo.Post;
 import com.test.lingvolivewall.other.App;
@@ -34,13 +32,7 @@ import rx.subscriptions.CompositeSubscription;
  */
 public class PresenterImpl implements Presenter {
 
-    private static final int PAGE_SIZE = 20;
-
-    /**
-     * How many pages should be saved to DB for offline mode
-     * when the application is closed.
-     */
-    private static final int PAGES_TO_SAVE = 5;
+    public static final int PAGE_SIZE = 20;
 
     private static final int AUTO_REFRESH = 42;
 
@@ -114,7 +106,7 @@ public class PresenterImpl implements Presenter {
         compositeSubscription.unsubscribe();
 
         if (!isChangingConfigurations) {
-            updateDB(view.get().getContext());
+            model.updateDB(view.get().getPosts());
         }
 
         view.clear();
@@ -138,7 +130,7 @@ public class PresenterImpl implements Presenter {
     }
 
     private void fetch(Context context, int postNumber) {
-        Subscription subscription = model.fetchPosts(context, postNumber)
+        Subscription subscription = model.fetchPosts(postNumber)
                 .observeOn(uiThread)
                 .subscribeOn(ioThread)
                 .subscribe(
@@ -191,19 +183,6 @@ public class PresenterImpl implements Presenter {
             case FAILURE:
                 view.showError(event.getThrowable().getMessage());
                 break;
-        }
-    }
-
-    private void updateDB(Context context) {
-        context.getContentResolver().delete(PostProvider.CONTENT_URI, null, null);
-
-        List<Post> posts = view.get().getPosts();
-
-        if (posts != null) {
-            for (int i = 0; i < Math.min(PAGE_SIZE * PAGES_TO_SAVE, posts.size()); i++) {
-                ContentValues contentValues = Post.prepareForDB(posts.get(i));
-                context.getContentResolver().insert(PostProvider.CONTENT_URI, contentValues);
-            }
         }
     }
 }

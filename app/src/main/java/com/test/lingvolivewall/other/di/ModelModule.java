@@ -1,6 +1,11 @@
 package com.test.lingvolivewall.other.di;
 
+import android.content.Context;
+
+import com.test.lingvolivewall.model.db.PostDBHelper;
 import com.test.lingvolivewall.model.network.LingvoLiveService;
+
+import java.lang.ref.WeakReference;
 
 import javax.inject.Singleton;
 
@@ -16,6 +21,13 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
  */
 @Module
 public class ModelModule {
+
+    public ModelModule(WeakReference<Context> contextWeakReference) {
+        this.contextWeakReference = contextWeakReference;
+    }
+
+    private WeakReference<Context> contextWeakReference;
+
     @Provides
     @Singleton
     LingvoLiveService getRemoteService() {
@@ -26,5 +38,11 @@ public class ModelModule {
                 .build();
 
         return retrofit.create(LingvoLiveService.class);
+    }
+
+    @Provides
+    @Singleton
+    PostDBHelper getDBHelper() {
+        return new PostDBHelper(contextWeakReference.get());
     }
 }

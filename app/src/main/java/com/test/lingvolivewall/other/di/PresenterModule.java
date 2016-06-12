@@ -2,6 +2,9 @@ package com.test.lingvolivewall.other.di;
 
 import com.test.lingvolivewall.model.Model;
 import com.test.lingvolivewall.model.ModelImpl;
+import com.test.lingvolivewall.model.db.PostDBHelper;
+import com.test.lingvolivewall.model.network.LingvoLiveService;
+import com.test.lingvolivewall.model.pojo.Post;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -11,7 +14,6 @@ import dagger.Provides;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
 
 /**
  * Created by Maxim Blumental on 6/2/2016.
@@ -21,8 +23,8 @@ import rx.subscriptions.CompositeSubscription;
 public class PresenterModule {
     @Provides
     @Singleton
-    Model getModel() {
-        return new ModelImpl();
+    Model getModel(PostDBHelper postDBHelper, LingvoLiveService lingvoLiveService) {
+        return new ModelImpl(postDBHelper, lingvoLiveService);
     }
 
     @Provides

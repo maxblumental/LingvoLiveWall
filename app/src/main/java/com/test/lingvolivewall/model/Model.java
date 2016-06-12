@@ -14,7 +14,9 @@ import rx.Observable;
  * bvmaks@gmail.com
  */
 public interface Model {
-    Observable<List<Post>> fetchPosts(Context context, int pageSize);
+    Observable<List<Post>> fetchPosts(int pageSize);
+
+    void updateDB(List<Post> posts);
 
     Observable<NetworkEvent> getNetworkEventBus();
 

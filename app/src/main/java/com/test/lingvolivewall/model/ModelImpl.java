@@ -1,11 +1,15 @@
 package com.test.lingvolivewall.model;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import com.test.lingvolivewall.model.db.PostProvider;
+import com.test.lingvolivewall.model.db.PostDBHelper;
+import com.test.lingvolivewall.model.db.PostTable;
 import com.test.lingvolivewall.model.network.LingvoLiveService;
 import com.test.lingvolivewall.model.network.NetworkEvent;
 import com.test.lingvolivewall.model.pojo.Post;
@@ -27,33 +31,47 @@ import rx.functions.Func1;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
+import static com.test.lingvolivewall.presenter.PresenterImpl.PAGE_SIZE;
+
 /**
  * Created by Maxim Blumental on 6/2/2016.
  * bvmaks@gmail.com
  */
 public class ModelImpl implements Model {
 
+    /**
+     * How many pages should be saved to DB for offline mode
+     * when the application is closed.
+     */
+    private static final int PAGES_TO_SAVE = 5;
+
     private AtomicBoolean hasMoreElements;
 
-    @Inject
+    PostDBHelper dbHelper;
+
     LingvoLiveService lingvoLiveService;
 
     private Subject<NetworkEvent, NetworkEvent> networkEventBus;
 
-    public ModelImpl() {
-        App.getComponent().inject(this);
+    @Inject
+    public ModelImpl(PostDBHelper dbHelper, LingvoLiveService lingvoLiveService) {
+        this.dbHelper = dbHelper;
+        this.lingvoLiveService = lingvoLiveService;
         networkEventBus = PublishSubject.create();
         hasMoreElements = new AtomicBoolean(false);
     }
 
     @Override
-    public Observable<List<Post>> fetchPosts(final Context context, int pageSize) {
+    public Observable<List<Post>> fetchPosts(int pageSize) {
         Observable<List<Post>> dbObservable = Observable.create(
                 new Observable.OnSubscribe<List<Post>>() {
                     @Override
                     public void call(Subscriber<? super List<Post>> subscriber) {
-                        Cursor cursor = context.getContentResolver().query(PostProvider.CONTENT_URI,
-                                null, null, null, null);
+                        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+                        queryBuilder.setTables(PostTable.POST_TABLE);
+
+                        SQLiteDatabase database = dbHelper.getWritableDatabase();
+                        Cursor cursor = queryBuilder.query(database, null, null, null, null, null, null);
 
                         if (cursor == null) {
                             subscriber.onCompleted();
@@ -99,6 +117,20 @@ public class ModelImpl implements Model {
                     }
                 })
                 .onErrorResumeNext(dbObservable);
+    }
+
+    @Override
+    public void updateDB(List<Post> posts) {
+        SQLiteDatabase database = dbHelper.getWritableDatabase();
+
+        database.delete(PostTable.POST_TABLE, null, null);
+
+        if (posts != null) {
+            for (int i = 0; i < Math.min(PAGE_SIZE * PAGES_TO_SAVE, posts.size()); i++) {
+                ContentValues contentValues = Post.prepareForDB(posts.get(i));
+                database.insert(PostTable.POST_TABLE, null, contentValues);
+            }
+        }
     }
 
     @Override

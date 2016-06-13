@@ -1,6 +1,7 @@
 package com.test.lingvolivewall.other.di;
 
 import com.test.lingvolivewall.model.ModelImpl;
+import com.test.lingvolivewall.model.db.DBManagerImpl;
 import com.test.lingvolivewall.presenter.PresenterImpl;
 import com.test.lingvolivewall.view.MainActivity;
 
@@ -20,4 +21,6 @@ public interface ApplicationComponent {
     void inject(PresenterImpl presenter);
 
     void inject(ModelImpl model);
+
+    void inject(DBManagerImpl dbManager);
 }

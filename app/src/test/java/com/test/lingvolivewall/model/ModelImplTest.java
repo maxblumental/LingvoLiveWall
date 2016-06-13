@@ -1,5 +1,6 @@
 package com.test.lingvolivewall.model;
 
+import com.test.lingvolivewall.model.db.DBManager;
 import com.test.lingvolivewall.model.network.LingvoLiveService;
 import com.test.lingvolivewall.model.pojo.Post;
 import com.test.lingvolivewall.model.pojo.ResponsePOJO;
@@ -30,6 +31,9 @@ public class ModelImplTest {
     @Mock
     LingvoLiveService lingvoLiveService;
 
+    @Mock
+    DBManager dbManager;
+
     @InjectMocks
     ModelImpl model;
 
@@ -56,7 +60,37 @@ public class ModelImplTest {
         TestSubscriber<List<Post>> testSubscriber = new TestSubscriber<>();
 
         observable.subscribe(testSubscriber);
-        testSubscriber.awaitTerminalEvent();
+
+        testSubscriber.assertNoErrors();
+        testSubscriber.assertCompleted();
+
+        ArrayList<List<Post>> items = new ArrayList<>();
+        Post post = new Post();
+        post.setPostDbId(1);
+        items.add(Collections.singletonList(post));
+
+        testSubscriber.assertReceivedOnNext(items);
+    }
+
+    @Test
+    public void fetchPostsWithError() throws Exception {
+        Mockito.when(lingvoLiveService.getPosts(PAGE_SIZE))
+                .thenReturn(Observable.create(new Observable.OnSubscribe<ResponsePOJO>() {
+                    @Override
+                    public void call(Subscriber<? super ResponsePOJO> subscriber) {
+                        throw new RuntimeException("some exception...");
+                    }
+                }));
+
+        Post mockReturn = new Post();
+        mockReturn.setPostDbId(1);
+        Mockito.when(dbManager.getAllPosts())
+                .thenReturn(new ArrayList<>(Collections.singletonList(mockReturn)));
+
+        Observable<List<Post>> observable = model.fetchPosts(PAGE_SIZE);
+        TestSubscriber<List<Post>> testSubscriber = new TestSubscriber<>();
+
+        observable.subscribe(testSubscriber);
 
         testSubscriber.assertNoErrors();
         testSubscriber.assertCompleted();

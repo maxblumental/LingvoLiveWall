@@ -2,6 +2,8 @@ package com.test.lingvolivewall.other.di;
 
 import android.content.Context;
 
+import com.test.lingvolivewall.model.db.DBManager;
+import com.test.lingvolivewall.model.db.DBManagerImpl;
 import com.test.lingvolivewall.model.db.PostDBHelper;
 import com.test.lingvolivewall.model.network.LingvoLiveService;
 
@@ -42,7 +44,7 @@ public class ModelModule {
 
     @Provides
     @Singleton
-    PostDBHelper getDBHelper() {
-        return new PostDBHelper(contextWeakReference.get());
+    DBManager getDBManager() {
+        return new DBManagerImpl(new PostDBHelper(contextWeakReference.get()));
     }
 }

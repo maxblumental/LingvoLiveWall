@@ -1,6 +1,5 @@
 package com.test.lingvolivewall.presenter;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 
@@ -81,7 +80,7 @@ public class PresenterImpl implements Presenter {
                     int size = posts == null || posts.size() < PAGE_SIZE
                             ? PAGE_SIZE
                             : posts.size();
-                    fetch(view.getContext(), size);
+                    fetch(size);
                     uiHandler.sendEmptyMessageDelayed(AUTO_REFRESH, AUTO_REFRESH_PERIOD);
                     return true;
                 }
@@ -92,7 +91,7 @@ public class PresenterImpl implements Presenter {
 
     @Override
     public void onStart() {
-        fetch(view.get().getContext(), PAGE_SIZE);
+        fetch(PAGE_SIZE);
         uiHandler.sendEmptyMessageDelayed(AUTO_REFRESH, AUTO_REFRESH_PERIOD);
     }
 
@@ -116,12 +115,12 @@ public class PresenterImpl implements Presenter {
     public void refresh() {
         List<Post> posts = view.get().getPosts();
         int size = posts == null ? PAGE_SIZE : posts.size();
-        fetch(view.get().getContext(), size);
+        fetch(size);
     }
 
     @Override
     public void loadMorePosts(int currentSize) {
-        fetch(view.get().getContext(), currentSize + PAGE_SIZE);
+        fetch(currentSize + PAGE_SIZE);
     }
 
     @Override
@@ -129,7 +128,7 @@ public class PresenterImpl implements Presenter {
         return model.isConnectionOK(view.get().getContext()) && model.hasMoreElements();
     }
 
-    private void fetch(Context context, int postNumber) {
+    private void fetch(int postNumber) {
         Subscription subscription = model.fetchPosts(postNumber)
                 .observeOn(uiThread)
                 .subscribeOn(ioThread)
